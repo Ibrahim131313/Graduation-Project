@@ -7,5 +7,4 @@ langchain-pinecone==0.2.8  # Pinecone vector database integration for LangChain
 pinecone-client==4.1.0  # Pinecone Python SDK (latest)
 langchain-openai==0.3.24  # OpenAI integration for LangChain
 langchain-community==0.3.26  # Community contributions for LangChain
-langchain-groq==0.3.1 # ✅ Updated Groq integration compatible with LangChain 0.3.x
--e .  # Local package installation
+langchain-groq==0.3.1 # Updated Groq integration compatible with LangChain 0.3.x
