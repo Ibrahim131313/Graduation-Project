@@ -1,0 +1,5 @@
+{
+  "name": "Al Zohor Hospital",
+  "description": "An intelligent monitoring and management platform for the Al Zohor Hospital environment, featuring role-based dashboards for Patients, Doctors, and Hospital Management to provide personalized care monitoring and operational analytics.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,21 @@
+{
+  "name": "iot-service",
+  "version": "1.0.0",
+  "description": "IoT microservice for Smart Hospital System - Sensor Readings",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "validator": "^13.15.20"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

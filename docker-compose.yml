@@ -1,0 +1,40 @@
+version: "3.9"
+
+
+services:
+
+# Database section
+  mongo:
+    image: mongo
+    container_name: healthcare-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+# Backend section
+
+  backend:
+    build: ./BackEnd
+    container_name: healthcare-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./BackEnd/.env
+    depends_on:
+      - mongo
+
+  
+# Frontend section 
+
+  frontend:
+    build: ./frontend
+    container_name: healthcare-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+# Volume for mongo      
+volumes:
+  mongo_data:
+
