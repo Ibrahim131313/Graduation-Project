@@ -77,7 +77,7 @@ JWT_SECRET_KEY=your_super_secret_jwt_key_here
 ### 3. Build and Run
 
 ```bash
-docker-compose -f docker-compose.microservices.yml up --build
+docker-compose -f docker-compose.local.yml up --build
 ```
 
 ### 4. Access the Application
