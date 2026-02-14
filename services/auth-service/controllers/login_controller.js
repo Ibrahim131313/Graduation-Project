@@ -34,21 +34,30 @@ const authUser = async (req, res) => {
     console.log(req.body);
     
     if (!email || !password) {
-      res.status(404).json({ status: "fail", data: "email and password are required" });
-      return;
+      // Use 400 Bad Request for missing fields
+      return res.status(400).json({ 
+        status: "fail", 
+        message: "Email and password are required." 
+      });
     }
     
     const user = await Login.findOne({ email: email });
 
+    // SECURITY: Use generic error message - don't reveal if user exists or password is wrong
     if (!user) {
-      res.status(404).json({ status: "fail", data: "user not found" });
-      return;
+      return res.status(401).json({ 
+        status: "fail", 
+        message: "Invalid email or password." 
+      });
     }
     
     const password_matched = await bcrypt.compare(password, user.password);
     if (!password_matched) {
-      res.status(404).json({ status: "fail", data: "wrong password" });
-      return;
+      // SECURITY: Same generic error message for wrong password
+      return res.status(401).json({ 
+        status: "fail", 
+        message: "Invalid email or password." 
+      });
     }
 
     const token = await JWT.sign(
@@ -64,9 +73,10 @@ const authUser = async (req, res) => {
 
     console.log("================================================");
   } catch (err) {
-    res.status(400).json({
+    console.error("Login error:", err);
+    res.status(500).json({
       status: "error",
-      message: err.message,
+      message: "An unexpected error occurred. Please try again.",
     });
   }
 };

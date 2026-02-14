@@ -5,8 +5,9 @@ FROM node:18-alpine AS build
 WORKDIR /app
 
 # Accept build arguments for Vite environment variables
-ARG VITE_BACKEND_URL=http://localhost:8080
-ARG VITE_SOCKET_URL=http://localhost:8080
+# Use empty string for relative URLs (nginx proxies API requests)
+ARG VITE_BACKEND_URL=
+ARG VITE_SOCKET_URL=
 
 # Set as environment variables so Vite can access them during build
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL

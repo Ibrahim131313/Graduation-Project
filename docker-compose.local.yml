@@ -15,7 +15,7 @@ services:
       dockerfile: Dockerfile.local
     container_name: hospital-gateway
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       - frontend
       - auth-service
@@ -128,7 +128,7 @@ services:
       - "9090"
     environment:
       - PINECONE_API_KEY=${PINECONE_API_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     networks:
       - hospital-network
     restart: unless-stopped
@@ -139,8 +139,8 @@ services:
   mongo:
     image: mongo:7
     container_name: hospital-mongodb
-    ports:
-      - "27017:27017"
+    expose:
+      - "27017"
     volumes:
       - mongo_data:/data/db
     networks:

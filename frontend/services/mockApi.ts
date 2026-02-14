@@ -134,13 +134,15 @@ export const api = {
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Invalid credentials or server error' }));
-        throw new Error(errorData.message || `Request failed with status ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        // Handle both 'message' and 'data' fields for backwards compatibility
+        const errorMessage = errorData.message || errorData.data || 'Invalid email or password.';
+        throw new Error(errorMessage);
     }
 
     const json = await response.json();
     if (json.status !== 'success') {
-        throw new Error(json.message || 'Login failed');
+        throw new Error(json.message || json.data || 'Login failed');
     }
 
     const loginData = json.data || json;

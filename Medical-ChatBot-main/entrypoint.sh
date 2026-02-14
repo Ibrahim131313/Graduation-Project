@@ -1,19 +1,33 @@
 #!/bin/bash
-set -e
 
 echo "=========================================="
 echo "Medical ChatBot Container Starting..."
 echo "=========================================="
 
-# Check if data directory has PDF files
-if ls /app/data/*.pdf 1> /dev/null 2>&1; then
+# Check if API keys are configured
+if [[ -z "$PINECONE_API_KEY" || "$PINECONE_API_KEY" == "your_pinecone_api_key_here" ]]; then
+    echo "⚠️  PINECONE_API_KEY not configured - skipping indexing"
+    echo "   Set real API keys in .env to enable the medical chatbot"
+    SKIP_INDEXING=true
+elif [[ -z "$GROQ_API_KEY" || "$GROQ_API_KEY" == "your_groq_api_key_here" ]]; then
+    echo "⚠️  GROQ_API_KEY not configured - skipping indexing"
+    echo "   Set real API keys in .env to enable the medical chatbot"
+    SKIP_INDEXING=true
+else
+    SKIP_INDEXING=false
+fi
+
+# Check if data directory has PDF files and run indexing
+if [[ "$SKIP_INDEXING" == "false" ]] && ls /app/data/*.pdf 1> /dev/null 2>&1; then
     echo "📄 Found PDF files in /app/data/"
     echo "🔄 Running document indexing to Pinecone..."
-    python store_index.py
-    echo "✅ Indexing complete!"
-else
+    if python store_index.py; then
+        echo "✅ Indexing complete!"
+    else
+        echo "⚠️  Indexing failed, but continuing to start server..."
+    fi
+elif [[ "$SKIP_INDEXING" == "false" ]]; then
     echo "⚠️  No PDF files found in /app/data/ - skipping indexing"
-    echo "   (The chatbot will use existing Pinecone index if available)"
 fi
 
 echo ""

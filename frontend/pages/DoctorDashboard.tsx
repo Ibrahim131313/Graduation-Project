@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components/Layout';
@@ -7,6 +5,7 @@ import { Doctor, Patient, DoctorPatientMessage } from '../types';
 import { api } from '../services/mockApi';
 import { DoctorAppointmentsView } from '../components/DoctorAppointmentsView';
 import { PatientDetailView } from '../components/PatientDetailView';
+import { appointmentService } from '../services/appointmentService';
 import { useNotification } from '../context/NotificationContext';
 import { useAlert } from '../context/AlertContext';
 
@@ -69,58 +68,61 @@ const MessagingView: React.FC<{ doctor: Doctor }> = ({ doctor }) => {
     setIsLoading(false);
   };
   
+  // Mobile chat view uses absolute positioning for smooth slide transitions
   return (
-    <div className="bg-white rounded-xl shadow-md h-[calc(100vh-8rem)] sm:h-[calc(100vh-10rem)] flex overflow-hidden">
-      {/* Conversation List */}
-      <div className={`w-full sm:w-1/3 flex-shrink-0 border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${selectedPatient ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}`}>
-        <div className="p-4 border-b">
-          <h3 className="text-xl font-semibold text-slate-800">Messages</h3>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {conversations.length > 0 ? conversations.map(convo => (
-            <button key={convo.patient.id} onClick={() => handleSelectConversation(convo.patient)} className={`w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 ${selectedPatient?.id === convo.patient.id ? 'bg-sky-50' : ''}`}>
-              <div className="flex justify-between items-center">
-                <p className="font-semibold text-slate-800">{convo.patient.name}</p>
-                {convo.unreadCount > 0 && <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{convo.unreadCount}</span>}
-              </div>
-              <p className="text-sm text-slate-500 truncate">{convo.lastMessage.text}</p>
-            </button>
-          )) : <p className="p-4 text-slate-500">No conversations yet.</p>}
-        </div>
-      </div>
-       {/* Chat View */}
-      <div className={`w-full sm:w-2/3 flex-shrink-0 flex flex-col transition-transform duration-300 ease-in-out ${selectedPatient ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}`}>
-        {selectedPatient ? (
-          <>
-            <div className="p-4 border-b flex items-center">
-               <button onClick={() => setSelectedPatient(null)} className="sm:hidden mr-4 p-2 rounded-full hover:bg-slate-100">
-                    &larr;
-                </button>
-              <h3 className="text-xl font-semibold text-slate-800">Chat with {selectedPatient.name}</h3>
-            </div>
-            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-              {messages.map(msg => (
-                <div key={msg.id} className={`flex items-end gap-2 ${msg.senderId === doctor.id ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-lg px-4 py-3 rounded-2xl ${msg.senderId === doctor.id ? 'bg-sky-500 text-white rounded-br-none' : 'bg-slate-200 text-slate-800 rounded-bl-none'}`}>
-                    <p>{msg.text}</p>
-                    <p className="text-xs opacity-70 mt-1 text-right">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                  </div>
-                </div>
-              ))}
-               <div ref={messagesEndRef} />
-            </div>
-            <div className="p-4 border-t bg-slate-50">
-              <div className="flex items-center gap-2">
-                <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Type your message..." className="w-full px-4 py-2 border text-slate-800 rounded-full focus:outline-none focus:ring-2 focus:ring-sky-500" disabled={isLoading}/>
-                <button onClick={handleSend} disabled={isLoading} className="bg-sky-500 text-white p-3 rounded-full hover:bg-sky-600 disabled:bg-sky-300 transition"><SendIcon/></button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 hidden sm:flex items-center justify-center text-slate-500 text-center p-4">
-            <p>Select a conversation to start chatting</p>
+    <div className="bg-white rounded-xl shadow-md flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - 10rem)', minHeight: '400px' }}>
+      <div className="flex-1 flex relative overflow-hidden">
+        {/* Conversation List */}
+        <div className={`absolute inset-0 sm:relative sm:inset-auto sm:w-1/3 flex-shrink-0 border-r border-slate-200 flex flex-col bg-white z-10 transition-transform duration-300 ease-in-out ${selectedPatient ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}`}>
+          <div className="p-4 border-b flex-shrink-0">
+            <h3 className="text-xl font-semibold text-slate-800">Messages</h3>
           </div>
-        )}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            {conversations.length > 0 ? conversations.map(convo => (
+              <button key={convo.patient.id} onClick={() => handleSelectConversation(convo.patient)} className={`w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 ${selectedPatient?.id === convo.patient.id ? 'bg-sky-50' : ''}`}>
+                <div className="flex justify-between items-center">
+                  <p className="font-semibold text-slate-800">{convo.patient.name}</p>
+                  {convo.unreadCount > 0 && <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{convo.unreadCount}</span>}
+                </div>
+                <p className="text-sm text-slate-500 truncate">{convo.lastMessage.text}</p>
+              </button>
+            )) : <p className="p-4 text-slate-500">No conversations yet.</p>}
+          </div>
+        </div>
+        {/* Chat View */}
+        <div className={`absolute inset-0 sm:relative sm:inset-auto sm:w-2/3 flex-shrink-0 flex flex-col bg-white transition-transform duration-300 ease-in-out ${selectedPatient ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}`}>
+          {selectedPatient ? (
+            <>
+              <div className="p-4 border-b flex items-center flex-shrink-0">
+                <button onClick={() => setSelectedPatient(null)} className="sm:hidden mr-4 p-2 rounded-full hover:bg-slate-100">
+                  &larr;
+                </button>
+                <h3 className="text-xl font-semibold text-slate-800 truncate">Chat with {selectedPatient.name}</h3>
+              </div>
+              <div className="flex-1 p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
+                {messages.map(msg => (
+                  <div key={msg.id} className={`flex items-end gap-2 ${msg.senderId === doctor.id ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] sm:max-w-lg px-4 py-3 rounded-2xl ${msg.senderId === doctor.id ? 'bg-sky-500 text-white rounded-br-none' : 'bg-slate-200 text-slate-800 rounded-bl-none'}`}>
+                      <p className="break-words">{msg.text}</p>
+                      <p className="text-xs opacity-70 mt-1 text-right">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="p-3 sm:p-4 border-t bg-slate-50 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Type your message..." className="flex-1 min-w-0 px-4 py-2 border text-slate-800 rounded-full focus:outline-none focus:ring-2 focus:ring-sky-500" disabled={isLoading}/>
+                  <button onClick={handleSend} disabled={isLoading} className="flex-shrink-0 bg-sky-500 text-white p-3 rounded-full hover:bg-sky-600 disabled:bg-sky-300 transition"><SendIcon/></button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 hidden sm:flex items-center justify-center text-slate-500 text-center p-4">
+              <p>Select a conversation to start chatting</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -132,6 +134,8 @@ export const DoctorDashboard: React.FC = () => {
     const [patients, setPatients] = useState<Patient[]>([]);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const [conversations, setConversations] = useState<{patient: Patient, lastMessage: DoctorPatientMessage, unreadCount: number}[]>([]);
+    const [newAppointmentCount, setNewAppointmentCount] = useState(0);
+    const lastSeenAppointmentCountRef = useRef(0);
     const { addToast } = useNotification();
     const { alerts } = useAlert();
     const notifiedMessagesRef = useRef<Set<string>>(new Set());
@@ -141,7 +145,15 @@ export const DoctorDashboard: React.FC = () => {
     const doctorAlerts = alerts.filter(alert => doctor.patients.includes(alert.patientId));
 
     useEffect(() => {
-        api.getDoctorPatients(doctor.id).then(setPatients);
+        api.getDoctorPatients(doctor.id).then(fetchedPatients => {
+            setPatients(fetchedPatients);
+
+            // Initialize the last-seen count on first load
+            const patientIds = fetchedPatients.map(p => p.id);
+            appointmentService.getAppointmentsForDoctor(patientIds).then(appointments => {
+                lastSeenAppointmentCountRef.current = appointments.length;
+            });
+        });
 
         const fetchConvos = async () => {
             const convos = await api.getDoctorConversations(doctor.id);
@@ -160,6 +172,27 @@ export const DoctorDashboard: React.FC = () => {
         return () => clearInterval(intervalId);
     }, [doctor.id, addToast]);
 
+    // Poll for new appointments
+    useEffect(() => {
+        if (patients.length === 0) return;
+        const patientIds = patients.map(p => p.id);
+
+        const checkNewAppointments = async () => {
+            const appointments = await appointmentService.getAppointmentsForDoctor(patientIds);
+            const currentCount = appointments.length;
+            const diff = currentCount - lastSeenAppointmentCountRef.current;
+
+            if (diff > 0 && activeTab !== 'Appointments') {
+                setNewAppointmentCount(prev => prev + diff);
+                addToast(`You have ${diff} new appointment${diff > 1 ? 's' : ''}!`);
+            }
+            lastSeenAppointmentCountRef.current = currentCount;
+        };
+
+        const intervalId = setInterval(checkNewAppointments, 5000);
+        return () => clearInterval(intervalId);
+    }, [patients, activeTab, addToast]);
+
     const handleSelectPatientFromAppointment = (patientId: string) => {
         const patient = patients.find(p => p.id === patientId);
         if (patient) {
@@ -172,7 +205,7 @@ export const DoctorDashboard: React.FC = () => {
 
     const sidebarItems = [
         { name: 'Patients', icon: <PatientListIcon />, onClick: () => { setActiveTab('Patients'); setSelectedPatient(null); } },
-        { name: 'Appointments', icon: <AppointmentIcon />, onClick: () => { setActiveTab('Appointments'); setSelectedPatient(null); } },
+        { name: 'Appointments', icon: <div className="relative"><AppointmentIcon /><span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center transition-opacity ${newAppointmentCount > 0 ? 'opacity-100' : 'opacity-0'}`}>{newAppointmentCount}</span></div>, onClick: () => { setActiveTab('Appointments'); setSelectedPatient(null); setNewAppointmentCount(0); } },
         { name: 'Messages', icon: <div className="relative"><MessageIcon /><span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center transition-opacity ${totalUnread > 0 ? 'opacity-100' : 'opacity-0'}`}>{totalUnread}</span></div>, onClick: () => { setActiveTab('Messages'); setSelectedPatient(null); } },
         { name: 'Alerts', icon: <div className="relative"><AlertIcon /><span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center transition-opacity ${doctorAlerts.length > 0 ? 'opacity-100' : 'opacity-0'}`}>{doctorAlerts.length}</span></div>, onClick: () => { setActiveTab('Alerts'); setSelectedPatient(null); } }
     ];
@@ -221,8 +254,22 @@ export const DoctorDashboard: React.FC = () => {
         return renderPatientList();
     };
 
+    // Simulate new appointments with a button
+    const simulateNewAppointment = () => {
+        setNewAppointmentCount(count => count + 1);
+    };
+
     return (
         <Layout sidebarItems={sidebarItems} activeItem={selectedPatient ? 'Patients' : activeTab}>
+            {/* Simulate new appointment button for demo/testing */}
+            <div className="flex justify-end mb-4">
+                <button
+                    onClick={simulateNewAppointment}
+                    className="bg-sky-500 text-white px-4 py-2 rounded-full shadow hover:bg-sky-600 transition font-semibold"
+                >
+                    Simulate New Appointment
+                </button>
+            </div>
             {renderContent()}
         </Layout>
     );

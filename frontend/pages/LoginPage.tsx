@@ -1,5 +1,5 @@
 
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const RedCrescentIcon = () => (
@@ -19,32 +19,29 @@ const AlertTriangleIcon = () => (
 
 export const LoginPage: React.FC = () => {
     const { login, isLoading, error, clearError } = useAuth();
-
-    useEffect(() => {
-        clearError();
-    }, [clearError]);
     
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    // Clear error when user starts typing
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+        if (error) clearError();
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+        if (error) clearError();
+    };
+
     const handleLogin = async (e: FormEvent) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevents page reload
         await login(email, password);
     };
     
     const formContainerClasses = "w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg";
     const inputClasses = "w-full px-4 py-2 text-slate-700 bg-slate-100 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
     const buttonClasses = "w-full py-3 px-4 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 transition-colors";
-
-    const ErrorDisplay = () => {
-        if (!error) return null;
-        return (
-            <div className="flex items-center p-3 bg-red-100 border border-red-200 text-red-700 text-sm rounded-md" role="alert">
-                <AlertTriangleIcon />
-                <span>{error}</span>
-            </div>
-        );
-    };
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
@@ -56,13 +53,18 @@ export const LoginPage: React.FC = () => {
                 </div>
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
-                        <input type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} className={inputClasses} required />
+                        <input type="email" placeholder="Email Address" value={email} onChange={handleEmailChange} className={inputClasses} required />
                     </div>
                     <div>
-                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className={inputClasses} required />
+                        <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange} className={inputClasses} required />
                     </div>
 
-                    <ErrorDisplay />
+                    {error && (
+                        <div className="flex items-center p-3 bg-red-100 border border-red-200 text-red-700 text-sm rounded-md" role="alert">
+                            <AlertTriangleIcon />
+                            <span>{error}</span>
+                        </div>
+                    )}
                     
                     <button type="submit" className={buttonClasses} disabled={isLoading}>
                         {isLoading ? 'Signing In...' : 'Sign in'}

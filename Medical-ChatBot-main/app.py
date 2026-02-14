@@ -1,7 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from src.helper import download_embeddings
 from langchain_pinecone import PineconeVectorStore
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,12 +9,26 @@ from langchain.memory import ConversationBufferWindowMemory
 from dotenv import load_dotenv
 from src.prompt import *
 import os
+from pinecone import Pinecone  # هذا هو الاستيراد الصحيح
 
 app = Flask(__name__)
 load_dotenv()
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# ✅ التعديل هنا: مش needed environment parameter مع الـ new client
+pc = Pinecone(
+    api_key=PINECONE_API_KEY,
+    environment="aped-4627-b74a"  # أو أي environment تبعك
+) # environment مش مطلوب هنا
+
+# Check if index exists
+print("Available indexes:", pc.list_indexes().names())  # للـ debugging
+
+if "medical-chatbot" not in pc.list_indexes().names():
+    raise ValueError("Index 'medical-chatbot' not found! Available indexes: {}".format(pc.list_indexes().names()))
 
 embeddings = download_embeddings()
 
@@ -24,22 +38,26 @@ docsearch = PineconeVectorStore.from_existing_index(
     embedding=embeddings
 )
 
+# باقي الكود كما هو...
+
 retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-# ✅ نموذج المحادثة
-chatModel = ChatGroq(
-    model="llama-3.1-8b-instant",
-    api_key=GROQ_API_KEY
+# ✅ Chat model using Google Gemini
+chatModel = ChatGoogleGenerativeAI(
+    model="gemini-flash-latest",
+    temperature=0.3,
+    convert_system_message_to_human=True,
+    api_key=GOOGLE_API_KEY,
 )
 
-# ✅ ذاكرة المحادثة: تتذكر آخر 3 تفاعلات فقط
+# ✅ Conversation memory: remembers the last 3 interactions only
 memory = ConversationBufferWindowMemory(
     memory_key="chat_history",
     return_messages=True,
     k=3
 )
 
-# ✅ الـ Prompt مع إدراج المحادثات السابقة
+# ✅ Prompt including previous conversation history
 prompt = ChatPromptTemplate.from_messages([
     ("system", system_prompt),
     ("placeholder", "{chat_history}"),

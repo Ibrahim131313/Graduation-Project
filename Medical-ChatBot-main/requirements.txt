@@ -1,10 +1,11 @@
-langchain==0.3.26  # Core library for building language model applications
-flask==3.1.1  # Web framework for building APIs
-sentence-transformers==4.1.0  # For embedding generation from huggingface
-pypdf==5.6.1  # For PDF text extraction
-python-dotenv==1.1.0  # For loading environment variables from .env file
-langchain-pinecone==0.2.8  # Pinecone vector database integration for LangChain
-pinecone-client==4.1.0  # Pinecone Python SDK (latest)
-langchain-openai==0.3.24  # OpenAI integration for LangChain
-langchain-community==0.3.26  # Community contributions for LangChain
-langchain-groq==0.3.1 # Updated Groq integration compatible with LangChain 0.3.x
+langchain==0.3.26
+langchain-community==0.3.26
+flask==3.1.1
+pypdf==5.6.1
+python-dotenv==1.1.0
+pinecone-client==4.1.0
+langchain-pinecone==0.2.8
+
+# 👇 التغيير هنا: شيلنا أرقام الإصدارات عشان هو يوفقهم مع بعض
+langchain-google-genai
+google-generativeai

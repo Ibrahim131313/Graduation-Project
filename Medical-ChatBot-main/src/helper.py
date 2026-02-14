@@ -1,15 +1,9 @@
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from typing import List
 from langchain.schema import Document
-from langchain.prompts import PromptTemplate
-
-
-
-
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+import os
 
 
 # EXtract text from pdf files
@@ -53,10 +47,14 @@ def text_split(minimal_docs):
 
 
 
-# Download the embidding model
-
+# Download the embedding model using Google Gemini
 def download_embeddings():
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    embeddings = HuggingFaceEmbeddings(
-        model_name=model_name)
+    """
+    Initialize Google Generative AI embeddings.
+    Requires GOOGLE_API_KEY to be set in the environment.
+    """
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+    )
     return embeddings
