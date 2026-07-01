@@ -1,0 +1,61 @@
+additionalPrometheusRulesMap:
+  custom-rules:
+    groups:
+      - name: node-usage-alerts
+        rules:
+        # 1. النود داون (لو السيرفر اختفى)
+        - alert: NodeDown
+          expr: up{job="node-exporter"} == 0
+          for: 10s
+          labels:
+            severity: critical
+          annotations:
+            summary: "CRITICAL: Node is down!"
+
+        # 2. السي بي يو عالي (أعلى من 50% للتجربة)
+        - alert: HighCPUUsage
+          expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 50
+          for: 10s
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage detected"
+
+        # 3. الميموري عالية (أعلى من 60% للتجربة)
+        - alert: HighMemoryUsage
+          expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 60
+          for: 10s
+          labels:
+            severity: warning
+
+        # 4. الديسك (لو المساحة الفاضية أقل من 20%)
+        - alert: LowDiskSpace
+          expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 20
+          for: 10s
+          labels:
+            severity: critical
+
+      - name: kubernetes-health-alerts
+        rules:
+        # 5. أي بود فاشل في أي نيم سبيس
+        - alert: PodFailing
+          expr: kube_pod_status_phase{phase=~"Failed|Unknown"} > 0 or rate(kube_pod_container_status_restarts_total[1m]) > 0
+          for: 10s
+          labels:
+            severity: critical
+          annotations:
+            description: "Pod {{ $labels.pod }} is failing in {{ $labels.namespace }}"
+
+        # 6. بود معلق (Pending) مش لاقي مكان ينزل فيه
+        - alert: PodPendingStuck
+          expr: kube_pod_status_phase{phase="Pending"} > 0
+          for: 10s
+          labels:
+            severity: warning
+
+        # 7. الأبلكيشن مش شغال بالعدد المطلوب (Desired Replicas)
+        - alert: DeploymentIncomplete
+          expr: kube_deployment_status_replicas_available < kube_deployment_spec_replicas
+          for: 10s
+          labels:
+            severity: warning

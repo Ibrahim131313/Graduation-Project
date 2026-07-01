@@ -73,5 +73,5 @@ sleep 4
 echo "===================================="
 echo "✅ Deployment completed successfully"
 echo "🌍 App should be available at:"
-echo "   https://hospital.ahmedkabil.me"
+echo "https://nabd-hospital.nabawi.me/"
 echo "===================================="

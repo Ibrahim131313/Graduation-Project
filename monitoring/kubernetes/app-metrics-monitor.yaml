@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hospital-app-monitor
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+spec:
+  # ﺐﻳﺭﺎﻘﺑ ﺄﻳ Service ﻊﻠﻴﻫ ﻞﻴﺒﻟ monitor: "true"
+  selector:
+    matchLabels:
+      monitor: "true"
+
+  # ﺐﻴﺒﺻ ﻒﻳ ﻚﻟ ﺎﻠـ Namespaces (ﻊﺷﺎﻧ ﻢﺷﺭﻮﻌﻛ ﻒﻴﻫ ﺄﻜﺗﺭ ﻢﻧ Namespace)
+  namespaceSelector:
+    any: true
+
+  endpoints:
+  - port: metrics      # ﺎﻟﺮﺒﻃ ﻊﻧ ﻁﺮﻴﻗ ﺎﺴﻣ ﺎﻠﺑﻭﺮﺗ ﻮﻠﻴﺳ ﺎﻟﺮﻘﻣ
+    path: /api/metrics
+    interval: 15s
+    honorLabels: true

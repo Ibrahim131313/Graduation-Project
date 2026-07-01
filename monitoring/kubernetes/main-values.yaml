@@ -1,0 +1,75 @@
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+    # ✅ dynamic / ingress-based (NO domain hardcoding)
+    externalUrl: "/prom-dashboard"
+    routePrefix: /prom-dashboard
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ebs-sc
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+
+grafana:
+
+  # ==============================
+  # Grafana credentials are stored
+  # in Kubernetes Secret:
+  # monitoring-secrets
+  # ==============================
+  admin:
+    existingSecret: monitoring-secrets
+    userKey: admin-user
+    passwordKey: admin-password
+
+  persistence:
+    enabled: true
+    storageClassName: ebs-sc
+    accessModes: ["ReadWriteOnce"]
+    size: 10Gi
+
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana-dashboard"
+      serve_from_sub_path: true
+
+alertmanager:
+  enabled: true
+
+  alertmanagerSpec:
+
+    # ==========================================
+    # Alertmanager configuration is stored in
+    # Kubernetes Secret:
+    # alertmanager-monitoring-stack-kube-prom-alertmanager
+    # ==========================================
+    configSecret: alertmanager-monitoring-stack-kube-prom-alertmanager
+    skipConfigRender: true
+    configMapOverrideName: ""
+
+    # Dynamic URL from ingress headers
+    externalUrl: "/alert-dashboard"
+    routePrefix: /
+
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ebs-sc
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi

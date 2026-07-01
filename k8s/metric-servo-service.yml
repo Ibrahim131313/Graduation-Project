@@ -37,10 +37,13 @@ kind: Service
 metadata:
   name: metric-servo-service-srv 
   namespace: hospital-ns
+  labels:
+    monitor: "true"  
 spec:
   selector:
     app: metric-servo-service
   ports:
-    - port: 4005
+    - name: metrics
+      port: 4005
       targetPort: 4005
   type: ClusterIP

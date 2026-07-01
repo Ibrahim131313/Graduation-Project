@@ -88,3 +88,10 @@ frontend/dist/
 # Misc
 updates.pdf
 frontend/android/nul
+
+# kubernetes ingnored files
+grafana-credentials-secret.yaml
+alert-manager-secret.yaml
+original-secret.yml
+original-tls-secret.yml
+unencrypted-tls-secret.yml

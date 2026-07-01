@@ -23,11 +23,11 @@ metadata:
 spec:
   ingressClassName: nginx
   tls:
-    - hosts:
-       - hospital.ahmedkabil.me
+    - hosts: 
+       - nabd-hospital.nabawi.me
       secretName: hospital-tls-secret
   rules:
-    - host: hospital.ahmedkabil.me
+    - host: nabd-hospital.nabawi.me
       http:
         paths:
           - path: /
