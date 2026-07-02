@@ -1,39 +1,38 @@
 #!/bin/bash
 set -e
 
-# استقبال التاج من جينكينز، لو مش مبعوت ياخد latest كاحتياطي
 TAG=${IMAGE_TAG:-latest}
 NAMESPACE="hospital-ns"
 
 echo "🔄 Updating App Images inside YAML files to Tag: $TAG"
-sed -i "s|ahmedkabil/hospital-auth-service:latest|ebrahimmohammed/hospital-auth-service:$TAG|g" k8s/auth-service.yml
-sed -i "s|ahmedkabil/hospital-core-service:latest|ebrahimmohammed/hospital-core-service:$TAG|g" k8s/core-service.yml
-sed -i "s|ahmedkabil/hospital-iot-service:latest|ebrahimmohammed/hospital-iot-service:$TAG|g" k8s/iot-service.yml
-sed -i "s|ahmedkabil/hospital-chat-service:latest|ebrahimmohammed/hospital-chat-service:$TAG|g" k8s/chat-service.yml
-sed -i "s|ahmedkabil/hospital-medical-chatbot:latest|ebrahimmohammed/hospital-medical-chatbot:$TAG|g" k8s/chatbot.yml
-sed -i "s|ahmedkabil/hospital-frontend:latest|ebrahimmohammed/hospital-frontend:$TAG|g" k8s/frontend.yml
-sed -i "s|imagePullPolicy: IfNotPresent|imagePullPolicy: Always|g" k8s/*.yml
+# شيلنا k8s/ من أسماء الملفات لأننا شغالين من جوه الفولدر نفسه
+sed -i "s|ahmedkabil/hospital-auth-service:latest|ebrahimmohammed/hospital-auth-service:$TAG|g" auth-service.yml
+sed -i "s|ahmedkabil/hospital-core-service:latest|ebrahimmohammed/hospital-core-service:$TAG|g" core-service.yml
+sed -i "s|ahmedkabil/hospital-iot-service:latest|ebrahimmohammed/hospital-iot-service:$TAG|g" iot-service.yml
+sed -i "s|ahmedkabil/hospital-chat-service:latest|ebrahimmohammed/hospital-chat-service:$TAG|g" chat-service.yml
+sed -i "s|ahmedkabil/hospital-medical-chatbot:latest|ebrahimmohammed/hospital-medical-chatbot:$TAG|g" chatbot.yml
+sed -i "s|ahmedkabil/hospital-frontend:latest|ebrahimmohammed/hospital-frontend:$TAG|g" frontend.yml
+sed -i "s|imagePullPolicy: IfNotPresent|imagePullPolicy: Always|g" *.yml
 
 echo "📦 Applying Infrastructure, DBs and Apps (Rolling Update)..."
-kubectl apply -f k8s/namespace.yml
-kubectl apply -f k8s/config-map.yml
-kubectl apply -f k8s/storage-class.yml --ignore-not-found=true
-kubectl apply -f k8s/mongodb.yml
-kubectl apply -f k8s/mongo-init-job.yml --ignore-not-found=true
-kubectl apply -f k8s/redis.yml
+kubectl apply -f namespace.yml
+kubectl apply -f config-map.yml
+kubectl apply -f storage-class.yml --ignore-not-found=true
+kubectl apply -f mongodb.yml
+kubectl apply -f mongo-init-job.yml --ignore-not-found=true
+kubectl apply -f redis.yml
 
 echo "🤖 Executing Rolling Update Deployment for Services..."
-kubectl apply -f k8s/chatbot.yml
-kubectl apply -f k8s/auth-service.yml
-kubectl apply -f k8s/core-service.yml
-kubectl apply -f k8s/metric-servo-service.yml
-kubectl apply -f k8s/iot-service.yml
-kubectl apply -f k8s/chat-service.yml
-kubectl apply -f k8s/frontend.yml
-kubectl apply -f k8s/ingress.yml
+kubectl apply -f chatbot.yml
+kubectl apply -f auth-service.yml
+kubectl apply -f core-service.yml
+kubectl apply -f metric-servo-service.yml
+kubectl apply -f iot-service.yml
+kubectl apply -f chat-service.yml
+kubectl apply -f frontend.yml
+kubectl apply -f ingress.yml
 
 echo "⏳ Verifying rollout status for ALL services..."
-# شيلنا الـ || true عشان جينكينز يفرمل ويديك أحمر فوراً لو خدمة واحدة وقعت
 kubectl rollout status -n $NAMESPACE deployment/chatbot-dep --timeout=90s
 kubectl rollout status -n $NAMESPACE deployment/auth-service-dep --timeout=90s
 kubectl rollout status -n $NAMESPACE deployment/core-service-dep --timeout=90s
