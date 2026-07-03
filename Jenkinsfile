@@ -51,7 +51,7 @@ pipeline {
                 docker push \$BOT_IMAGE:\$IMAGE_TAG
 
                 docker build -t $IOT_IMAGE:$IMAGE_TAG ./services/iot-service
-docker push $IOT_IMAGE:$IMAGE_TAG
+                docker push $IOT_IMAGE:$IMAGE_TAG
 
                 docker build -t \$FRONT_IMAGE:\$IMAGE_TAG -f ./frontend/Dockerfile.microservices ./frontend
                 docker push \$FRONT_IMAGE:\$IMAGE_TAG
