@@ -72,12 +72,7 @@ pipeline{
                         sh "kubectl apply -f k8s/namespace.yml"
                         sh """
                             kubectl delete secret hospital-secret -n ${NAMESPACE} --ignore-not-found=true
-                            kubectl create secret generic hospital-secret -n ${NAMESPACE} \
-                              --from-literal=jwt-secret-key='${JWT_SECRET}' \
-                              --from-literal=pinecone-api-key='${PINECONE_API}' \
-                              --from-literal=google-api-key='${GOOGLE_API}' \
-                              --from-literal=gemini-api-keys='${GEMINI_API}' \
-                              --from-literal=groq-api-key='${GROQ_API}'
+                            kubectl create secret generic hospital-secret -n hospital-ns --from-literal=jwt-secret-key=${JWT_SECRET} --from-literal=pinecone-api-key=${PINECONE_API} --from-literal=google-api-key=${GOOGLE_API} --from-literal=gemini-api-keys=${GEMINI_API} --from-literal=groq-api-key=${GROQ_API} --from-literal=force-reindex=false
                         """
 
                     echo "🚀 Invoking the deploy script..."
