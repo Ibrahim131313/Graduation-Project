@@ -17,9 +17,11 @@ sed -i "s|imagePullPolicy: IfNotPresent|imagePullPolicy: Always|g" *.yml
 echo "📦 Applying Infrastructure, DBs and Apps (Rolling Update)..."
 kubectl apply -f namespace.yml
 kubectl apply -f config-map.yml
-kubectl apply -f storage-class.yml --ignore-not-found=true
+
+# شيلنا --ignore-not-found من هنا
+kubectl apply -f storage-class.yml 
 kubectl apply -f mongodb.yml
-kubectl apply -f mongo-init-job.yml --ignore-not-found=true
+kubectl apply -f mongo-init-job.yml 
 kubectl apply -f redis.yml
 
 echo "🤖 Executing Rolling Update Deployment for Services..."
