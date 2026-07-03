@@ -44,14 +44,14 @@ pipeline {
                 docker build -t \$CHAT_IMAGE:\$IMAGE_TAG ./services/chat-service
                 docker push \$CHAT_IMAGE:\$IMAGE_TAG
 
-                docker build -t $METRIC_IMAGE:$IMAGE_TAG ./services/metric-servo-service
-                docker push $METRIC_IMAGE:$IMAGE_TAG
+                docker build -t \$METRIC_IMAGE:\$IMAGE_TAG ./services/metric-servo-service
+                docker push \$METRIC_IMAGE:\$IMAGE_TAG
 
                 docker build -t \$BOT_IMAGE:\$IMAGE_TAG ./Medical-ChatBot-main
                 docker push \$BOT_IMAGE:\$IMAGE_TAG
 
-                docker build -t $IOT_IMAGE:$IMAGE_TAG ./services/iot-service
-                docker push $IOT_IMAGE:$IMAGE_TAG
+                docker build -t \$IOT_IMAGE:\$IMAGE_TAG ./services/iot-service
+                docker push \$IOT_IMAGE:\$IMAGE_TAG
 
                 docker build -t \$FRONT_IMAGE:\$IMAGE_TAG -f ./frontend/Dockerfile.microservices ./frontend
                 docker push \$FRONT_IMAGE:\$IMAGE_TAG
