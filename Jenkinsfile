@@ -91,7 +91,7 @@ pipeline {
                         
                         echo "🚀 Running Deploy Script..."
                         // تشغيل السكريبت الرئيسي اللي بره فولدر scripts
-                        sh "SLACK_WEBHOOK_URL='https://dummy-url.com' bash deploy-monitoring.sh"
+                        sh "SLACK_WEBHOOK_URL='https://dummy-url.com' bash scripts/deploy-monitoring.sh"
                     }
                 }
             }
