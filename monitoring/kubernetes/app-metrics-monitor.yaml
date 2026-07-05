@@ -6,17 +6,17 @@ metadata:
   labels:
     release: monitoring-stack
 spec:
-  # ﺐﻳﺭﺎﻘﺑ ﺄﻳ Service ﻊﻠﻴﻫ ﻞﻴﺒﻟ monitor: "true"
+
   selector:
     matchLabels:
       monitor: "true"
 
-  # ﺐﻴﺒﺻ ﻒﻳ ﻚﻟ ﺎﻠـ Namespaces (ﻊﺷﺎﻧ ﻢﺷﺭﻮﻌﻛ ﻒﻴﻫ ﺄﻜﺗﺭ ﻢﻧ Namespace)
+  
   namespaceSelector:
     any: true
 
   endpoints:
-  - port: metrics      # ﺎﻟﺮﺒﻃ ﻊﻧ ﻁﺮﻴﻗ ﺎﺴﻣ ﺎﻠﺑﻭﺮﺗ ﻮﻠﻴﺳ ﺎﻟﺮﻘﻣ
+  - port: metrics 
     path: /api/metrics
-    interval: 15s
+    interval: 5s
     honorLabels: true

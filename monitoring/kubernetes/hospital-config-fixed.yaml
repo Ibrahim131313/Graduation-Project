@@ -1,0 +1,50 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: hospital-alert-config
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+
+spec:
+  receivers:
+    
+    - name: "null"
+
+    # Slack Receiver
+    - name: "Slack-Notifications"
+      slackConfigs:
+        - apiURL:
+            key: webhook-url
+            name: slack-webhook-secret
+          channel: "#alerts"
+          sendResolved: true
+          title: "🚨 {{ .CommonLabels.alertname }}"
+          text: |-
+            *Alert:* {{ .CommonLabels.alertname }}
+
+            *Description:*
+            {{ .CommonAnnotations.summary }}
+            {{ .CommonAnnotations.description }}
+
+            *Severity:* `{{ .CommonLabels.severity }}`
+
+            *Namespace:* `{{ .CommonLabels.namespace }}`
+            *Pod:* `{{ .CommonLabels.pod }}`
+            *Node:* `{{ .CommonLabels.node }}`
+            *Instance:* `{{ .CommonLabels.instance }}`
+
+  route:
+    receiver: "null"
+
+    groupBy:
+      - alertname
+      - namespace
+
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 30m
+
+    routes:
+      
+      - receiver: "Slack-Notifications"

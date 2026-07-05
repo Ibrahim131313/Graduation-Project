@@ -1,0 +1,70 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'namespace', 'pod', 'node']
+  group_wait: 30s
+  group_interval: 1m
+  repeat_interval: 30m
+  receiver: 'slack-notifications'
+
+  routes:
+    - match_re:
+        alertname: 'KubePodCrashLooping|KubePodNotReady|Watchdog|KubeControllerManagerInstanceUnreachable|KubeProxyInstanceUnreachable'
+      receiver: 'null'
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['pod', 'namespace', 'alertname']
+
+receivers:
+- name: 'slack-notifications'
+  slack_configs:
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: hospital-alert-config
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+spec:
+  receivers:
+  - name: 'null'
+  # تعريف ريسيفر وهمي بنفس اسم الريسيفر العام لتعطيله
+  - name: 'slack-notifications' 
+    slackConfigs:
+      channel: '#void'
+  # تعريف الريسيفر الخاص بك (الرابط الصحيح)
+  - name: 'Slack-Notifications'
+    slackConfigs:
+    - apiURL:
+        key: webhook-url
+        name: slack-webhook-secret
+      channel: '#alerts'
+      sendResolved: true
+      text: |-
+        • *Alert:* {{ .CommonAnnotations.summary }}
+        • *Description:* {{ .CommonAnnotations.description }}
+        • *Severity:* `{{ .CommonLabels.severity }}`
+  route:
+    receiver: 'null'
+    groupBy: ['alertname', 'job']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 3h
+    routes:
+    - receiver: 'Slack-Notifications'
+      matchers:
+      - name: alertname
+        value: "HospitalServiceDown|PodFailing|PodPendingStuck|DeploymentIncomplete"
+        matchType: =~
+  - api_url: '****************************************************'
+    channel: '#alerts'
+    username: 'PrometheusBot'
+    send_resolved: true
+    title: 'Alert: {{ .CommonLabels.alertname }}'
+    text: '{{ .CommonAnnotations.summary }}'
+- name: 'null'
