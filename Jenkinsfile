@@ -82,17 +82,20 @@ pipeline {
             steps {
                 script {
                     echo "📊 Running Monitoring Script directly..."
-                    dir('monitoring-project') {
-                        sh "chmod +x scripts/delete.sh scripts/deploy-monitoring.sh"
+                    dir('monitoring') {
+                        // إعطاء صلاحيات للملفات جوه فولدر scripts وجوه الفولدر الرئيسي
+                        sh "chmod +x scripts/delete.sh deploy-monitoring.sh || chmod +x scripts/*.sh || true"
+                        
+                        echo "🧹 Running Delete Script..."
                         sh "bash scripts/delete.sh"
                         
-                        // تمرير متغير Slack فيك لتخطي الفحص بنجاح وتشغيل السكريبت كاملاً
-                        sh "SLACK_WEBHOOK_URL='https://dummy-url.com' bash scripts/deploy-monitoring.sh"
+                        echo "🚀 Running Deploy Script..."
+                        // تشغيل السكريبت الرئيسي اللي بره فولدر scripts
+                        sh "SLACK_WEBHOOK_URL='https://dummy-url.com' bash deploy-monitoring.sh"
                     }
                 }
             }
         }
-    }
 
     post {
         always {
