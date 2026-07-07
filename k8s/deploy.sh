@@ -4,21 +4,68 @@ set -e
 TAG=${IMAGE_TAG:-latest}
 NAMESPACE="hospital-ns"
 
-echo "🔄 Updating App Images inside YAML files to Tag: $TAG"
-# شيلنا k8s/ من أسماء الملفات لأننا شغالين من جوه الفولدر نفسه
-sed -i "s|ahmedkabil/hospital-auth-service:latest|ebrahimmohammed/hospital-auth-service:$TAG|g" auth-service.yml
-sed -i "s|ahmedkabil/hospital-core-service:latest|ebrahimmohammed/hospital-core-service:$TAG|g" core-service.yml
-sed -i "s|ahmedkabil/hospital-iot-service:latest|ebrahimmohammed/hospital-iot-service:$TAG|g" iot-service.yml
-sed -i "s|ahmedkabil/hospital-chat-service:latest|ebrahimmohammed/hospital-chat-service:$TAG|g" chat-service.yml
-sed -i "s|ahmedkabil/hospital-medical-chatbot:latest|ebrahimmohammed/hospital-medical-chatbot:$TAG|g" chatbot.yml
-sed -i "s|ahmedkabil/hospital-frontend:latest|ebrahimmohammed/hospital-frontend:$TAG|g" frontend.yml
+echo "🔄 Updating App Images inside YAML files based on Change Detection..."
+
+# 1. Auth Service
+if [ "$AUTH_CHANGED" = "true" ]; then
+    echo "✨ Updating auth-service to Tag: $TAG"
+    sed -i "s|ebrahimmohammed/hospital-auth-service:[^ ]*|ebrahimmohammed/hospital-auth-service:$TAG|g" auth-service.yml
+else
+    echo "ℹ️ No changes in auth-service. Keeping existing tag."
+fi
+
+# 2. Core Service
+if [ "$CORE_CHANGED" = "true" ]; then
+    echo "✨ Updating core-service to Tag: $TAG"
+    sed -i "s|ebrahimmohammed/hospital-core-service:[^ ]*|ebrahimmohammed/hospital-core-service:$TAG|g" core-service.yml
+else
+    echo "ℹ️ No changes in core-service. Keeping existing tag."
+fi
+
+# 3. IoT Service
+if [ "$IOT_CHANGED" = "true" ]; then
+    echo "✨ Updating iot-service to Tag: $TAG"
+    sed -i "s|ebrahimmohammed/hospital-iot-service:[^ ]*|ebrahimmohammed/hospital-iot-service:$TAG|g" iot-service.yml
+else
+    echo "ℹ️ No changes in iot-service. Keeping existing tag."
+fi
+
+# 4. Chat Service
+if [ "$CHAT_CHANGED" = "true" ]; then
+    echo "✨ Updating chat-service to Tag: $TAG"
+    sed -i "s|ebrahimmohammed/hospital-chat-service:[^ ]*|ebrahimmohammed/hospital-chat-service:$TAG|g" chat-service.yml
+else
+    echo "ℹ️ No changes in chat-service. Keeping existing tag."
+fi
+
+# 5. Medical Chatbot
+if [ "$BOT_CHANGED" = "true" ]; then
+    echo "✨ Updating chatbot to Tag: $TAG"
+    sed -i "s|ebrahimmohammed/hospital-medical-chatbot:[^ ]*|ebrahimmohammed/hospital-medical-chatbot:$TAG|g" chatbot.yml
+else
+    echo "ℹ️ No changes in chatbot. Keeping existing tag."
+fi
+
+# 6. Frontend
+if [ "$FRONT_CHANGED" = "true" ]; then
+    echo "✨ Updating frontend to Tag: $TAG"
+    sed -i "s|ebrahimmohammed/hospital-frontend:[^ ]*|ebrahimmohammed/hospital-frontend:$TAG|g" frontend.yml
+else
+    echo "ℹ️ No changes in frontend. Keeping existing tag."
+fi
+
+# 7. Metric Servo Service (لو حابب تضيف تعديل ملف الـ YAML بتاعها مستقبلاً)
+if [ "$METRIC_CHANGED" = "true" ]; then
+    echo "✨ Metric Servo Service changed, ensuring deployment updates."
+fi
+
+
 sed -i "s|imagePullPolicy: IfNotPresent|imagePullPolicy: Always|g" *.yml
 
 echo "📦 Applying Infrastructure, DBs and Apps (Rolling Update)..."
 kubectl apply -f namespace.yml
 kubectl apply -f config-map.yml
 
-# شيلنا --ignore-not-found من هنا
 kubectl apply -f storage-class.yml 
 kubectl apply -f mongodb.yml
 kubectl apply -f mongo-init-job.yml 
