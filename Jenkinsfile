@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'k8s-node'
+        label 'k8s-node
     } 
 
     environment {
