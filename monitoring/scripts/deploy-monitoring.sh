@@ -140,6 +140,25 @@ echo "Step 9: Deploying AlertmanagerConfig..."
 kubectl apply -f "$K8S_DIR/hospital-config-fixed.yaml"
 
 ############################################
+# Restart Alertmanager to reload Slack Webhook
+############################################
+
+echo "Restarting Alertmanager..."
+
+source ~/monitoring-project/scripts/secrets.sh
+
+
+kubectl delete secret slack-webhook-secret -n monitoring --ignore-not-found
+
+kubectl create secret generic slack-webhook-secret \
+  --from-literal=webhook-url="$SLACK_WEBHOOK_URL" \
+  -n monitoring
+
+
+
+kubectl rollout restart statefulset alertmanager-monitoring-stack-kube-prom-alertmanager -n monitoring
+
+############################################
 # Step 10 - Ingress
 ############################################
 
