@@ -6,7 +6,7 @@ A comprehensive healthcare management platform built with a **microservices arch
 
 ---
 
-## 📋 Architecture Overview
+#📋 Architecture Overview
 
 The system consists of **7 Docker containers** working together:
 
